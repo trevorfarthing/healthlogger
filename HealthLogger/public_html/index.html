@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--
+Health Logger Application
+Authors: Will Miner and Trevor Farthing
+Class: CPSC 326 Programming Languages
+Date: May 5, 2016
+-->
+<html>
+    <head>
+        <title>Will and Trevor's Health Logger</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- short CSS code just to make display easier -->
+<style>
+#header {
+    font-size: 130%;
+    text-align:center;   
+}
+
+td {
+    width: 33.333%
+}
+
+</style>
+</head>
+<body>
+   <div id="header">
+    <h1>Will and Trevor's Health Logger
+    <img align="center" src="applelifter.jpg" alt="Logo" style="width:110px;height:110px;"></h1>
+    </div>
+    <hr>
+    <center>
+        <!-- form at the top where the user will enter information -->
+    <form name = "userForm" id = "userForm" onSubmit = "return validation()">
+        <b>Age: <input type="number" name="yourAge" max ="100" min ="13" value ="20">
+         Weight: <input type="number" name="yourWeight" max ="3000" min ="50" value ="150" ></b> lbs
+         &nbsp;&nbsp;&nbsp;
+        <b>Height: <input type="number" name="yourFeet" max ="10" min ="2" value = "5"></b> feet 
+        <input type="number" name="yourInches" max ="11" min ="0" value ="11"> inches
+        &nbsp;&nbsp;&nbsp;
+        <b>Gender:</b> <input type="radio" name="yourGender" id ="male" checked> male <input type="radio" name="yourGender" id ="female"> female
+        &nbsp;&nbsp;&nbsp;
+        <input type ="submit" value ="SUBMIT">
+    </form>
+    </center>
+
+ <!-- sets up initial rows of the table -->   
+<table width="100%" height="800" border="4" bgcolor="gray" id ="healthTable" >        
+    <tr height="80" id="titles">
+        <td align="center"><u><font size="5">FOOD</font></td>
+        <td align="center"><u><font size="5">EXERCISE</font></td> 
+        <td align="center"><u><font size="5">SLEEP</font></td>
+    </tr>
+  
+</table>
+
+<script type ="text/javascript">
+    //set appearance of various items, would normally be done with CSS
+    document.getElementById("header").style.fontFamily = "Impact,Charcoal,sans-serif";
+    document.getElementById("header").style.color = "red";
+    document.getElementById("titles").style.fontFamily = "Impact,Charcoal,sans-serif";
+   //the main table
+    var table = document.getElementById("healthTable");
+    //the form which holds all of the information
+    var form = document.getElementById("userForm");
+    //array to hold the input boxes of calories
+    var calorieBoxesArray = [];
+    //array to hold the input boxes of sleep hours
+    var sleepBoxesArray = [];
+    //variables for exercise factors (using Harris-Benedict equations)
+    var LIGHT = 1.375;
+    var MEDIUM = 1.55;
+    var HEAVY = 1.725;
+    var EXTREME = 1.9;
+    //loops through to add cells
+    for(var i = 0; i < 7; i++) {
+        var row = table.insertRow(i+1);
+        //3 cells per row
+        for(var j = 0; j < 3; j++) {
+            var cell = row.insertCell(j);
+            //for first column of 'Food'
+            if(j === 0) {
+                //text label for calories from food
+                var dayCaloriesText = document.createTextNode("Day " + (i+1) + " Calories: ");
+                cell.appendChild(dayCaloriesText);
+                //input box to enter calories
+                var dayCalories = document.createElement("input");
+                //set conditions
+                dayCalories.type = "text";
+                dayCalories.min = 0;
+                dayCalories.max = 10000;
+                dayCalories.value = 2000;
+                cell.appendChild(dayCalories);
+                //store in array for later
+                calorieBoxesArray.push(dayCalories);
+            } else if(j === 1) {
+                //text label for type of exercise
+                var dayExerciseText = document.createTextNode("Day " + (i+1) + " Exercise: ");
+                cell.appendChild(dayExerciseText);
+                
+                //radio button 1 for light exercise
+                var lightExercise = document.createElement("input");
+                lightExercise.type = "radio";
+                lightExercise.name = "dayExercise" + i;
+                lightExercise.value = LIGHT; 
+                //add it to the cell 
+                cell.appendChild(lightExercise);
+                //label for light exercise
+                var light = document.createTextNode(" Light ");
+                cell.appendChild(light);
+                
+                //radio button 2 for medium exercise
+                var medExercise = document.createElement("input");
+                medExercise.type = "radio";
+                medExercise.name = "dayExercise" + i;
+                medExercise.value = MEDIUM;
+                //add it to the cell 
+                cell.appendChild(medExercise);
+                //label for medium exercise
+                var med = document.createTextNode(" Medium ");
+                cell.appendChild(med);
+                
+                //radio button 3 for heavy exercise
+                var heavyExercise = document.createElement("input");
+                heavyExercise.type = "radio";
+                heavyExercise.name = "dayExercise" + i;
+                heavyExercise.value = HEAVY;
+                //add it to the cell 
+                cell.appendChild(heavyExercise);
+                //label for heavy exercise
+                var heavy = document.createTextNode(" Heavy ");
+                cell.appendChild(heavy);
+                
+                //radio button 4 for very heavy exercise
+                var extremeExercise = document.createElement("input");
+                extremeExercise.type = "radio";
+                extremeExercise.name = "dayExercise" + i;
+                extremeExercise.value = EXTREME;
+                //add it to the cell 
+                cell.appendChild(extremeExercise);
+                //label for heavy exercise
+                var extreme = document.createTextNode(" Extreme ");
+                cell.appendChild(extreme);
+                lightExercise.checked = true;
+            } else {
+                //text label for hours from sleep
+                var sleepHoursText = document.createTextNode("Day " + (i+1) + " Hours: ");
+                cell.appendChild(sleepHoursText);
+                //input box to enter calories
+                var sleepHours = document.createElement("input");
+                //set conditions
+                sleepHours.type = "text";
+                sleepHours.min = 0;
+                sleepHours.max = 24;
+                sleepHours.value = 8;
+                cell.appendChild(sleepHours);
+                sleepBoxesArray.push(sleepHours);
+            }
+        }
+    }
+    
+    //Person class (constructor)
+    function Person(age,weight,height,gender) {
+        this.age = age;
+        this.weight = weight;
+        this.height = height;
+        this.gender = gender;
+        //based on how active a person is
+        this.exerciseFactor = 0;
+        //basal metabolic rate
+        this.BMR = 0;
+        //total hours of sleep in a week
+        this.sleepHours = 0;
+        //total calories consumed in a week
+        this.foodCalories = 0;
+    };
+    
+    //Calculates the person's basal metabolic rate
+    Person.prototype.calcBMR = function() {
+        //convert lbs to kg for calculation
+        var kg = this.weight * 0.453592;
+        var cm = this.height * 2.54;
+        //bMR calculation - magic numbers
+        var bMR = (10 * kg) + (6.25 * cm) - (5 * this.age);
+        //Men vs. women difference
+        if(this.gender === "male") {
+            bMR = bMR + 5;
+        } else {
+            bMR = bMR - 161;
+        }
+        this.BMR = bMR;
+    };
+    
+    //Calculates the average exercise factor of the person
+    Person.prototype.calcAvgExercise = function() {
+        var totalFactor = 0;
+        //loop through each collection of radio buttons
+        for(var i = 0; i < 7; i++) {
+            var radioGroup = document.getElementsByName("dayExercise" + i);
+            //loop through each of the buttons in the collection
+            for(var j = 0; j < radioGroup.length; j++) {
+               if(radioGroup[j].checked === true) {
+                   //creates a running sum of the exercise factors
+                   totalFactor = totalFactor + parseFloat(radioGroup[j].value);
+               } 
+            }
+        }
+        //the average exercise factor over a week
+        this.exerciseFactor = (totalFactor / 7);
+    };
+    
+    //Calculates the total Calorie intake over a week based on sleep and food
+    Person.prototype.calcCalorieIntake = function() {
+        // 0.42 calories for every pound in one hour of sleep
+        var sleepCaloriesBurned = this.sleepHours * this.weight * 0.42;
+        var totalCalories = this.foodCalories - sleepCaloriesBurned;
+        return totalCalories;
+    };
+    
+    //Calculates the total hours of sleep in a week from the table
+    Person.prototype.calcTotalSleep = function() {
+        var totalHours = 0;
+        //loops through and sums up hours of sleep in a week
+        for(var i = 0; i < sleepBoxesArray.length; i++) {
+            totalHours = totalHours + parseFloat(sleepBoxesArray[i].value);
+        } 
+        this.sleepHours = totalHours;
+    };
+    
+    //calculates the total calories gained by food in a week from the table
+    Person.prototype.calcFoodCal = function() {
+        var totalCalories = 0;
+        //loops through and sums up the calories of food in a week
+        for(var i = 0; i < calorieBoxesArray.length; i++) {
+            totalCalories = totalCalories + parseInt(calorieBoxesArray[i].value);
+        }
+        this.foodCalories = totalCalories;
+    };
+    
+    //called once submit button is pressed
+    function validation() {
+        var age = document.forms["userForm"]["yourAge"];
+        var weight = document.forms["userForm"]["yourWeight"];
+        var feet = document.forms["userForm"]["yourFeet"];
+        var inches = document.forms["userForm"]["yourInches"];
+        var gender = document.forms["userForm"]["yourGender"];
+        //Checks for all valid input and sends alert if not
+        if(age.value < 13 || age.value > 100 || isNaN(age.value)) {
+            alert("Age must be between 13 and 100 years.");
+            return false;
+        } else if(weight.value < 50 || weight.value > 3000 || isNaN(weight.value)) {
+            alert("Weight must be between 50 and 3000 lbs.");
+            return false;
+        } else if(feet.value < 2 || feet.value > 10 || isNaN(feet.value)) {
+            alert("Height must be between 2'0\" and 10'0\".");
+            return false;
+        } else if(inches.value < 0 || inches.value > 11 || isNaN(parseInt(inches.value))) {
+            alert("Inches must be between 0 and 11.");
+            return false;
+        } else {
+            //loops through array of calorie inputs to check if valid
+            for(var i = 0; i < calorieBoxesArray.length; i++) {
+                if(calorieBoxesArray[i].value > 10000 || calorieBoxesArray[i].value < 0
+                   || isNaN(calorieBoxesArray[i].value)) {
+                    alert("Calories must be between 0 and 10,000.");
+                    return false;
+                }
+            }
+            //loops through array of sleep hour inputs to check if valid
+            for(var i = 0; i < sleepBoxesArray.length; i++) {
+                if(sleepBoxesArray[i].value > 24 || sleepBoxesArray[i].value < 0
+                   || isNaN(sleepBoxesArray[i].value)) {
+                    alert("Sleep hours must be between 0 and 24.");
+                    return false;
+                }
+            }
+            var userGender = getSelectedGender();   
+            var height_inches = (parseInt(feet.value) * 12) + parseInt(inches.value);
+            //Instantiates a new person
+            var user = new Person(parseInt(age.value),parseInt(weight.value),height_inches,userGender);
+            //Calls functions to fill in instance variables with values
+            user.calcBMR();
+            user.calcAvgExercise();
+            user.calcTotalSleep();
+            user.calcFoodCal();
+            var calIntake = user.calcCalorieIntake();
+            //calories needed to maintain person's current weight
+            var cal2Maintain = Math.round(user.BMR * user.exerciseFactor);
+            //Prints out all of the results at the end
+            alert("Your total Calorie intake over a week (with sleep factored in) is " 
+                   + calIntake.toFixed(2) + " Calories." +
+                  "\nYour average Calorie intake per day (with sleep factored in) is " 
+                   + (calIntake/7).toFixed(2) + " Calories." +
+                  "\nYour total amount of sleep in a week is " + user.sleepHours.toFixed(1) + " hours." +
+                  "\nYour average amount of sleep per day is " + (user.sleepHours/7).toFixed(1) + " hours." +
+                  "\nYou need " + cal2Maintain + " Calories to maintain your weight." +
+                  "\nYou need " + (cal2Maintain - 500) + " Calories per day to lose 1 lb per week." +
+                  "\nYou need " + (cal2Maintain + 500) + " Calories per day to gain 1 lb per week." +
+                  "\nYou need " + (cal2Maintain - 1000)+ " Calories per day to lose 2 lb per week." +
+                  "\nYou need " + (cal2Maintain + 1000)+ " Calories per day to gain 2 lb per week,");
+            //ensures that page doesn't refresh after submission
+            return false;
+        }
+                 
+    };
+    
+    //returns string of which gender user has selected
+    function getSelectedGender() {
+        if (document.getElementById("male").checked)
+            return "male";
+        else 
+            return "female";
+    };
+    
+</script>
+</body>
+</html>

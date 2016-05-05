@@ -1,0 +1,9 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix} Health Logger Application
+${licensePrefix}Authors: Will Miner and Trevor Farthing
+${licensePrefix} Date: May 5, 2016
+<#if licenseLast??>
+${licenseLast}
+</#if>
